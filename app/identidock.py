@@ -2,6 +2,7 @@ from flask import Flask, Response, request
 import requests
 import hashlib
 import redis
+import html
 
 
 app = Flask(__name__)
@@ -15,11 +16,10 @@ def mainpage():
 
     name = default_name
     if request.method == 'POST':
-        name = request.form['name']
+        name = html.escape(request.form['name'], quote=True)
 
     salted_name = salt + name
     name_hash = hashlib.sha256(salted_name.encode()).hexdigest()
-
 
     header = '<html><head><title>Identidoc</title></head><body>'
     body = '''<form method="POST">
@@ -35,6 +35,8 @@ def mainpage():
 
 @app.route('/monster/<name>')
 def get_identicon(name):
+
+    name = html.escape(name, quote=True)
 
     image = cache.get(name)
 
